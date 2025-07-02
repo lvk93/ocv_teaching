@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: ocv_teaching
+Version: 0.1.0
+Summary: A Python toolbox for modeling and visualizing battery OCV curves
+Author-email: Lars von Kolzenberg <lars.vonkolzenberg@gmail.com>
+License: MIT
+Project-URL: Homepage, https://github.com/lvk93/ocv_teaching
+Project-URL: Repository, https://github.com/lvk93/ocv_teaching.git
+Keywords: battery,OCV,SOC,modeling,visualization
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.20
+Requires-Dist: matplotlib>=3.3
+Requires-Dist: pandas>=1.1

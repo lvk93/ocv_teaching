@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "battery-ocv-toolbox"
+name = "ocv_teaching"
 version = "0.1.0"
 description = "A Python toolbox for modeling and visualizing battery OCV curves"
 authors = [
