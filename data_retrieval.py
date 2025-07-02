@@ -15,7 +15,6 @@ Requirements:
 """
 import pandas as pd
 import numpy as np
-from liiondb.functions.fn_db import liiondb, read_data
 
 
 def fetch_half_cell_ocv_by_material(material_name: str) -> dict:
@@ -29,7 +28,7 @@ def fetch_half_cell_ocv_by_material(material_name: str) -> dict:
         Dict mapping data_id to a numpy array of shape (N, 2) with SOC and voltage pairs.
     """
     # Connect to LiionDB
-    db_obj, _ = liiondb()
+    db_obj, _ = fn_db.liiondb()
 
     # Query raw_data, class, and binary function for half-cell OCV
     query = """
