@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+
+**pycache**/
+\*.py\[cod]
+\*\$py.class
+
+# C extensions
+
+\*.so
+
+# Distribution / packaging
+
+build/
+dist/
+.eggs/
+\*.egg-info/
+\*.egg
+
+# Virtual environment
+
+venv/
+.env
+
+# Installer logs
+
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+
+htmlcov/
+.coverage
+.coverage.\*
+.cache
+nosetests.xml
+coverage.xml
+
+# Jupyter Notebook checkpoints
+
+.ipynb\_checkpoints/
+
+# IDEs and editors
+
+.vscode/
+.idea/
+
+# macOS
+
+.DS\_Store
+
+# Data and output
+
+data/
+output/
+
+# Logs
+
+\*.log
