@@ -7,20 +7,35 @@ class CellOCVReconstruction:
     """
     Reconstructs full-cell OCV from two materials and their N:P ratio.
     """
-    def __init__(self, pos_material: ActiveMaterial, neg_material: ActiveMaterial):
-        self.pos = pos_material
-        self.neg = neg_material
+    def __init__(self, cath_material: ActiveMaterial, an_material: ActiveMaterial):
+        self.cath = cath_material
+        self.an = an_material
 
     def reconstruct(self, np_ratio) -> (np.ndarray, np.ndarray):
-        cap_pos = self.pos.effective_capacity()
-        cap_neg = self.neg.effective_capacity() * np_ratio
-        cap_cell = min(cap_pos, cap_neg)
 
-        soc = np.linspace(0, 1, len(self.pos.ocv.soc))
-        v_pos = np.interp(soc * cap_cell / cap_pos, self.pos.ocv.soc, self.pos.ocv.get_voltage())
-        v_neg = np.interp(soc * cap_cell / cap_neg, self.neg.ocv.soc, self.neg.ocv.get_voltage())
-        v_cell = v_pos - v_neg
-        return soc, v_cell
+        np_offset = np_ratio*self.an.formation_loss - self.cath.formation_loss
+
+        sol_an_fun = lambda x: (-x+1-np_offset)/ np_ratio
+        
+        soc_vec = np.linspace(0, 1, 100)
+        
+        sol_an = sol_an_fun(soc_vec)
+        sol_cath = np.linspace(0, 1, 100)
+        sol_an = -1/np_ratio * sol_cath + (1-np_offset) 
+        soc = np.linspace(0, 1, 100)
+
+        v_cath = np.interp(sol_cath, self.cath.ocv.soc, self.cath.ocv.get_voltage())
+        v_an = np.interp(sol_an, self.an.ocv.soc, self.an.ocv.get_voltage())
+        v_cell = v_cath - v_an
+        # Flip everything correctly
+        v_cell = np.flip(v_cell)
+        v_cath = np.flip(v_cath)
+        v_an = np.flip(v_an)
+
+        return soc,v_cath,v_an,v_cell
+
+    def simulate_aging_modes(self,LAMPE,LAMNE,LLI):
+        return
 
     def plot(self):
         soc, v_cell = self.reconstruct()

@@ -11,9 +11,6 @@ class ActiveMaterial:
         self.specific_capacity = specific_capacity
         self.formation_loss = formation_loss
 
-    def effective_capacity(self) -> float:
-        return self.specific_capacity * (1 - self.formation_loss)
-
     def plot(self, mode: str = 'charge'):
         fig, ax = new_plot()
         ax.plot(self.ocv.soc, self.ocv.get_voltage(mode))
