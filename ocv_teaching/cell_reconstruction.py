@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .common import new_plot
 from .active_material import ActiveMaterial
+from scipy.interpolate import interp1d
+
 
 class CellOCVReconstruction:
     """
@@ -11,28 +13,28 @@ class CellOCVReconstruction:
         self.cath = cath_material
         self.an = an_material
 
-    def reconstruct(self, np_ratio) -> (np.ndarray, np.ndarray):
+    def reconstruct(self, np_ratio:float, v_min:float, v_max:float) -> (np.ndarray, np.ndarray):
 
         np_offset = np_ratio*self.an.formation_loss - self.cath.formation_loss
 
         sol_an_fun = lambda x: (-x+1-np_offset)/ np_ratio
         
         soc_vec = np.linspace(0, 1, 100)
-        
-        sol_an = sol_an_fun(soc_vec)
-        sol_cath = np.linspace(0, 1, 100)
-        sol_an = -1/np_ratio * sol_cath + (1-np_offset) 
-        soc = np.linspace(0, 1, 100)
+        volt_cath_cha = self.interpolate(self.cath.ocv.soc, self.cath.ocv.get_voltage('charge'), soc_vec)
+        volt_cath_dis = self.interpolate(self.cath.ocv.soc, self.cath.ocv.get_voltage('discharge'), soc_vec)
+        volt_an_cha = self.interpolate(self.an.ocv.soc, self.an.ocv.get_voltage('charge'), sol_an_fun(soc_vec))
+        volt_an_dis = self.interpolate(self.an.ocv.soc, self.an.ocv.get_voltage('discharge'), sol_an_fun(soc_vec))
 
-        v_cath = np.interp(sol_cath, self.cath.ocv.soc, self.cath.ocv.get_voltage())
-        v_an = np.interp(sol_an, self.an.ocv.soc, self.an.ocv.get_voltage())
-        v_cell = v_cath - v_an
-        # Flip everything correctly
-        v_cell = np.flip(v_cell)
-        v_cath = np.flip(v_cath)
-        v_an = np.flip(v_an)
+        # Determine cell voltage
+        volt_cell_cha = volt_cath_cha - volt_an_cha
+        volt_cell_dis = volt_cath_dis - volt_an_dis
 
-        return soc,v_cath,v_an,v_cell
+        # Determine stoichiometries
+        an0 = self.interpolate(volt_cell_dis,sol_an_fun(soc_vec), v_min)
+        an1 = self.interpolate(volt_cell_cha,sol_an_fun(soc_vec), v_max)
+        cath0 = self.interpolate(volt_cell_dis,soc_vec, v_min)
+        cath1 = self.interpolate(volt_cell_cha,soc_vec, v_max)
+        return an0, cath0, an1, cath1
 
     def simulate_aging_modes(self,LAMPE,LAMNE,LLI):
         return
@@ -45,3 +47,15 @@ class CellOCVReconstruction:
         ax.set_ylabel('Cell Voltage (V)')
         ax.set_title(f'Full-Cell OCV Reconstruction')
         plt.show()
+
+    def interpolate(self,xp, yp, x):
+        """
+        Interpolates the voltage values for given SOC values.
+        """
+        f = interp1d(
+            xp, yp,
+            kind='linear',
+            fill_value='extrapolate',   # allow linear extrapolation
+            assume_sorted=False         # will sort xp/yp internally
+        )
+        return f(x)
