@@ -82,5 +82,6 @@ class BatteryMuComparison:
         ax_ocv.set_xlabel("Cathode SoL")
         ax_ocv.grid(True)
         ax_ocv.legend()
+        
         plt.tight_layout()
         plt.show()

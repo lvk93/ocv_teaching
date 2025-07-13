@@ -17,6 +17,7 @@ class BatteryMuPlot:
         self.lli = 0.0
         self.lam_cath = 0.0
         self.lam_anode = 0.0
+        self.np_eff = np_ratio * (1 - self.lam_anode) / (1 - self.lam_cath)
 
         # Setup state of lithiation grid (cathode driven)
         self.sol = np.linspace(0, 1, resolution)
@@ -62,12 +63,13 @@ class BatteryMuPlot:
         self.soc = soc
         # Apply aging-adjusted values
         self.sol_cath = float(self.soc_to_sol_cath(self.soc)) 
-        self.sol_an =  (1 - self.lli - self.sol_cath * (1 - self.lam_cath)) / (1 - self.lam_anode)
+        self.sol_an =  (1 - self.lli - self.sol_cath * (1 - self.lam_cath)) / (1 - self.lam_anode)/ self.np_eff
 
 
 
         self.ocv_an = self.ocv_anode(self.sol)
         self.ocv_cath = self.ocv_cathode(self.sol)
+
         self.mu_an = -F * self.ocv_an
         self.mu_cath = -F * self.ocv_cath
 
@@ -83,12 +85,13 @@ class BatteryMuPlot:
         self.lam_cath = lam_cath
         self.lam_anode = lam_anode
         self._precompute_voltage_curve()
+        self.np_eff = self.np_ratio * (1 - self.lam_anode)/ (1 - self.lam_cath)
         self.set_soc(self.soc)
 
     def plot_lines(self):
         plt.figure(figsize=(8, 6))
-        plt.plot(self.sol, self.mu_cath, color='red', label='Cathode μₗᵢ')
-        plt.plot(self.sol, self.mu_an, color='blue', label='Anode μₗᵢ')
+        plt.plot(self.sol*(1-self.lam_cath), self.mu_cath, color='red', label='Cathode μₗᵢ')
+        plt.plot(self.sol* self.np_eff, self.mu_an, color='blue', label='Anode μₗᵢ')
 
         volt_ticks = np.linspace(0, 5, 11)
         mu_ticks = -F * volt_ticks
@@ -103,8 +106,8 @@ class BatteryMuPlot:
         fig, (ax_mu, ax_ocv) = plt.subplots(2, 1, figsize=(12,6), sharex=True, height_ratios=[3, 1])
 
         # === μ_Li curves ===
-        ax_mu.plot(self.sol, self.mu_cath, color='red', label='Cathode μₗᵢ')
-        ax_mu.plot(self.sol, self.mu_an, color='blue', label='Anode μₗᵢ')
+        ax_mu.plot(self.sol*(1-self.lam_cath), self.mu_cath, color='red', label='Cathode μₗᵢ')
+        ax_mu.plot(self.sol* self.np_eff, self.mu_an, color='blue', label='Anode μₗᵢ')
 
         # Fill regions
         ax_mu.fill_between(self.sol[self.sol <= self.sol_cath],
@@ -117,8 +120,8 @@ class BatteryMuPlot:
                         color='blue', alpha=0.3)
 
         # Markers
-        ax_mu.plot(self.sol_cath, self.mu_cath_soc, 'o', color='red', markersize=10)
-        ax_mu.plot(self.sol_an, self.mu_an_soc, 'o', color='blue', markersize=10)
+        ax_mu.plot(self.sol_cath*(1-self.lam_cath), self.mu_cath_soc, 'o', color='red', markersize=10)
+        ax_mu.plot(self.sol_an* self.np_eff, self.mu_an_soc, 'o', color='blue', markersize=10)
 
         # Δμ arrow
         arrow_x = self.sol_cath
