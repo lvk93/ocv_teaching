@@ -18,18 +18,14 @@ class CellOCVReconstruction:
         self.v_max = v_max
 
     def get_stoichiometries(self, np_ratio=None,np_offset =None, v_min=None, v_max=None) -> (float, float, float, float):
-        if np_ratio is None:
-            np_ratio = self.np_ratio
-        if np_offset is None:
-            np_offset = self.np_offset
+ 
         if v_min is None:
             v_min = self.v_min  
         if v_max is None:
             v_max = self.v_max
 
-        sol_an_fun = lambda x: (-x+1-np_offset)/ np_ratio
-        an0 = sol_an_fun(0)
-        an1 = sol_an_fun(1)
+        an0 = self.align_anode_cathode(0, np_ratio, np_offset)
+        an1 = self.align_anode_cathode(1, np_ratio, np_offset)
 
         # Determine cell voltage
         volt_cell_cha = self.reconstruct_voltage(an0,0,an1,1,direction="charge")[0]
@@ -37,11 +33,22 @@ class CellOCVReconstruction:
 
         # Determine stoichiometries
         soc_vec = np.linspace(0, 1, 100)
-        an0 = interpolate(volt_cell_dis,sol_an_fun(soc_vec), v_min)
-        an1 = interpolate(volt_cell_cha,sol_an_fun(soc_vec), v_max)
+        an0 = interpolate(volt_cell_dis,self.align_anode_cathode(soc_vec, np_ratio, np_offset), v_min)
+        an1 = interpolate(volt_cell_cha,self.align_anode_cathode(soc_vec, np_ratio, np_offset), v_max)
         cath0 = interpolate(volt_cell_dis,soc_vec, v_min)
         cath1 = interpolate(volt_cell_cha,soc_vec, v_max)
         return an0, cath0, an1, cath1
+    
+    def align_anode_cathode(self,sol_cath,np_ratio=None, np_offset=None):
+        """
+        Aligns the anode and cathode stoichiometries based on the given N:P ratio and offset.
+        """
+        if np_ratio is None:
+            np_ratio = self.np_ratio
+        if np_offset is None:
+            np_offset = self.np_offset
+        return   (-sol_cath + 1 - np_offset) / np_ratio
+    
 
     def simulate_aging_modes(self,LAMPE,LAMNE,LLI):
         np_aged = self.np_ratio*(1-LAMNE)/ (1-LAMPE)
