@@ -1,6 +1,7 @@
 from .cell_reconstruction import CellOCVReconstruction
 import matplotlib.pyplot as plt
-from utils import interpolate
+import numpy as np
+from .utils import interpolate
 class BatteryTankPlotter:
     """
     Uses CellOCVReconstruction to plot dQ/dV 'tanks' and OCV curves for BOL and aged cells.
