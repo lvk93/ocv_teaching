@@ -106,6 +106,7 @@ class BatteryTankPlotter:
         ax1.set_ylim(-5, 0)
         yticks = np.arange(-5, 1, 1)
         ax1.set_yticks(yticks)
+        ax1.set_yticklabels(np.arange(5,-1,-1))
         ax1.legend(loc='center left')
         ax1.grid(True)
         #Get BOL and aged OCV curves         
